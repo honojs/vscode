@@ -1,0 +1,83 @@
+{
+  "name": "hono",
+  "displayName": "Hono",
+  "description": "VSCode extension for Hono development.",
+  "version": "0.0.1",
+  "publisher": "usualoma",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/honojs/vscode"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "hono.request.run",
+        "title": "Hono: Request (from CodeLens)"
+      },
+      {
+        "command": "hono.request.watch",
+        "title": "Hono: Request --watch (from CodeLens)"
+      },
+      {
+        "command": "hono.request.debug",
+        "title": "Hono: Request Debug (from CodeLens)"
+      }
+    ],
+    "configuration": {
+      "title": "Hono",
+      "properties": {
+        "hono.request.enableCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CodeLens on Hono route definitions like app.get('/path', ...)."
+        },
+        "hono.request.nodePath": {
+          "type": "string",
+          "default": "node",
+          "description": "Path to node executable used to run bundled @hono/cli."
+        },
+        "hono.request.extraArgs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Extra args appended to `hono request`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "vscode:prepublish": "npm run clean && npm run compile",
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "test": "vitest run",
+    "package": "npm run vscode:prepublish && npx @vscode/vsce package",
+    "lint": "echo \"(lint not configured)\""
+  },
+  "dependencies": {
+    "@hono/cli": "0.1.1",
+    "typescript": "^5.6.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.0.0",
+    "vitest": "^2.1.8"
+  }
+}
+
+

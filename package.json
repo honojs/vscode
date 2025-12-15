@@ -41,9 +41,10 @@
       "title": "Hono",
       "properties": {
         "hono.request.enableCodeLens": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable CodeLens on Hono route definitions like app.get('/path', ...)."
+          "type": "string",
+          "enum": ["auto", "always", "disabled"],
+          "default": "auto",
+          "description": "CodeLens behavior: auto (only in files containing `new Hono`), always (all route calls), disabled."
         },
         "hono.request.nodePath": {
           "type": "string",

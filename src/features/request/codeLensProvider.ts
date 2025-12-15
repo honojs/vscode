@@ -26,11 +26,11 @@ export class RequestCodeLensProvider implements vscode.CodeLensProvider, vscode.
 
   provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const cfg = getRequestConfig()
-    if (!cfg.enableCodeLens) return []
+    if (cfg.enableCodeLens === 'disabled') return []
 
     const text = document.getText()
     // Only enable this feature for files that appear to define a Hono app.
-    if (!/\bnew\s+Hono\b/.test(text)) return []
+    if (cfg.enableCodeLens === 'auto' && !/\bnew\s+Hono\b/.test(text)) return []
 
     const routes = parseRoutes(text, document)
     if (routes.length === 0) return []

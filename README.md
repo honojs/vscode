@@ -35,8 +35,11 @@ If your route path contains placeholders like `/posts/page/:page`, the extension
 
 You can configure the extension via VS Code Settings:
 
-- `hono.request.enableCodeLens` (boolean)
-  - Enable/disable CodeLens
+- `hono.request.enableCodeLens` (`"auto" | "always" | "disabled"`)
+  - Default: `"auto"`
+  - `"auto"`: only show CodeLens in files containing `new Hono`
+  - `"always"`: show CodeLens for all supported route calls
+  - `"disabled"`: never show CodeLens
 - `hono.request.nodePath` (string)
   - Default: `"node"`
   - Node executable used to run the bundled `@hono/cli`

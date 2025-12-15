@@ -1,7 +1,9 @@
 import * as vscode from 'vscode'
 
+export type EnableCodeLensMode = 'auto' | 'always' | 'disabled'
+
 export type RequestConfig = {
-  enableCodeLens: boolean
+  enableCodeLens: EnableCodeLensMode
   nodePath: string
   extraArgs: string[]
 }
@@ -15,7 +17,7 @@ export function getRequestConfig(): RequestConfig {
   const cfg = getRequestSection()
 
   return {
-    enableCodeLens: cfg.get<boolean>('enableCodeLens', true),
+    enableCodeLens: cfg.get<EnableCodeLensMode>('enableCodeLens', 'auto'),
     nodePath: (cfg.get<string>('nodePath', 'node') || 'node').trim(),
     extraArgs: cfg.get<string[]>('extraArgs', []),
   }

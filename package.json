@@ -69,7 +69,7 @@
     "lint": "echo \"(lint not configured)\""
   },
   "dependencies": {
-    "@hono/cli": "0.1.1",
+    "@hono/cli": "file:./hono-cli-0.1.4.tgz",
     "typescript": "^5.6.3"
   },
   "devDependencies": {

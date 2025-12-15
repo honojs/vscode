@@ -52,7 +52,9 @@
         },
         "hono.request.extraArgs": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "Extra args appended to `hono request`."
         }
@@ -64,20 +66,26 @@
     "vscode:prepublish": "npm run clean && npm run compile",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "test": "vitest run",
-    "package": "npm run vscode:prepublish && npx @vscode/vsce package",
-    "lint": "echo \"(lint not configured)\""
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:watch": "vitest watch",
+    "lint": "eslint --ext js,ts src",
+    "lint:fix": "eslint --ext js,ts src --fix",
+    "format": "prettier src --check",
+    "format:fix": "prettier src --write",
+    "package": "npm run vscode:prepublish && npx @vscode/vsce package"
   },
   "dependencies": {
     "@hono/cli": "file:./hono-cli-0.1.4.tgz",
     "typescript": "^5.6.3"
   },
   "devDependencies": {
+    "@hono/eslint-config": "^1.1.1",
     "@types/node": "^20.11.30",
     "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^3.0.0",
+    "eslint": "^9.39.2",
+    "prettier": "^3.7.4",
     "vitest": "^2.1.8"
   }
 }
-
-

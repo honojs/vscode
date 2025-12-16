@@ -1,4 +1,4 @@
-# Hono
+# Hono VSCode Extension
 
 Run Hono CLI requests directly from your route definitions via CodeLens.
 

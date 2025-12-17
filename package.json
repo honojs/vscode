@@ -42,7 +42,11 @@
       "properties": {
         "hono.request.enableCodeLens": {
           "type": "string",
-          "enum": ["auto", "always", "disabled"],
+          "enum": [
+            "auto",
+            "always",
+            "disabled"
+          ],
           "default": "auto",
           "description": "CodeLens behavior: auto (only in files containing `new Hono`), always (all route calls), disabled."
         },
@@ -77,7 +81,7 @@
     "package": "npm run vscode:prepublish && npx @vscode/vsce package"
   },
   "dependencies": {
-    "@hono/cli": "file:./hono-cli-0.1.4.tgz",
+    "@hono/cli": "^0.1.5",
     "typescript": "^5.6.3"
   },
   "devDependencies": {

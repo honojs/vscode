@@ -169,10 +169,12 @@ export async function runRequestWatchInTerminal({
   output.appendLine(`[cwd] ${cwd}`)
 
   const termName = `Hono Watch: ${args.path}`
-  const terminal = vscode.window.createTerminal({
-    name: termName,
-    cwd,
-  })
+  const terminal =
+    vscode.window.terminals.find((t) => t.name.startsWith('Hono Watch: ')) ??
+    vscode.window.createTerminal({
+      name: termName,
+      cwd,
+    })
 
   const commandLine = [cmd, ...fullArgs].map(quoteForShell).join(' ')
   terminal.show(true)

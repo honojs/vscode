@@ -38,7 +38,7 @@
       },
       {
         "command": "hono.debug",
-        "title": "Hono Debug"
+        "title": "Hono: Debug"
       }
     ],
     "configuration": {

@@ -169,12 +169,24 @@ export async function runRequestWatchInTerminal({
   output.appendLine(`[cwd] ${cwd}`)
 
   const termName = `Hono Watch: ${args.path}`
-  const terminal =
-    vscode.window.terminals.find((t) => t.name.startsWith('Hono Watch: ')) ??
-    vscode.window.createTerminal({
-      name: termName,
-      cwd,
-    })
+  // Restart behavior: stop any existing watch terminal first, then create a fresh one.
+  // English comment: This avoids stale processes/session state and is more reliable than reusing a running terminal.
+  const existing = vscode.window.terminals.find((t) => t.name.startsWith('Hono Watch: '))
+  if (existing) {
+    try {
+      // Try to stop the running process (Ctrl+C), then close the terminal.
+      existing.sendText('\u0003', false)
+    } catch {
+      // ignore
+    }
+    // Closing the terminal is often more reliable than attempting to reuse it.
+    existing.dispose()
+  }
+
+  const terminal = vscode.window.createTerminal({
+    name: termName,
+    cwd,
+  })
 
   const commandLine = [cmd, ...fullArgs].map(quoteForShell).join(' ')
   terminal.show(true)

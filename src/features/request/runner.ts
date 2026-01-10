@@ -205,7 +205,7 @@ export async function runRequestDebug({ args, output, extensionPath }: RunnerDep
 
   output.appendLine('')
   output.appendLine(
-    `[debug] launching with inspector: ${cfg.nodePath} --inspect-brk=0 ${entry} request -P ${resolved.path}`
+    `[debug] launching with inspector: ${cfg.nodePath} --inspect=0 ${entry} request -P ${resolved.path}`
   )
   output.show(true)
 
@@ -216,7 +216,7 @@ export async function runRequestDebug({ args, output, extensionPath }: RunnerDep
     name: debugName,
     cwd,
     runtimeExecutable: cfg.nodePath || 'node',
-    runtimeArgs: ['--inspect-brk=0'],
+    runtimeArgs: ['--inspect=0'],
     program: entry,
     args: [
       'request',

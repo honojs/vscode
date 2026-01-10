@@ -44,7 +44,7 @@ export async function runHonoDebugServe(params: {
   const debugName = `Hono Debug: ${path.basename(filePath)}`
 
   params.output.appendLine('')
-  params.output.appendLine(`[debug] ${cfg.nodePath} --inspect-brk=0 ${honoCliEntry} serve ${filePath}`)
+  params.output.appendLine(`[debug] ${cfg.nodePath} --inspect=0 ${honoCliEntry} serve ${filePath}`)
   params.output.show(true)
 
   const launchConfig: vscode.DebugConfiguration = {
@@ -53,7 +53,7 @@ export async function runHonoDebugServe(params: {
     name: debugName,
     cwd,
     runtimeExecutable: cfg.nodePath || 'node',
-    runtimeArgs: ['--inspect-brk=0'],
+    runtimeArgs: ['--inspect=0'],
     program: honoCliEntry,
     args: ['serve', filePath, ...cfg.extraArgs],
     console: 'integratedTerminal',

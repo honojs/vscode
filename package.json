@@ -25,18 +25,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "hono.request.run",
-        "title": "Hono: Request (from CodeLens)"
-      },
-      {
-        "command": "hono.request.watch",
-        "title": "Hono: Request --watch (from CodeLens)"
-      },
-      {
-        "command": "hono.request.debug",
-        "title": "Hono: Request Debug (from CodeLens)"
-      },
-      {
         "command": "hono.debug",
         "title": "Hono: Debug"
       }

@@ -28,6 +28,9 @@ export class RequestCodeLensProvider implements vscode.CodeLensProvider, vscode.
     const cfg = getRequestConfig()
     if (cfg.enableCodeLens === 'disabled') return []
 
+    // Do not show CodeLens in test files.
+    if (isTestFile(document.uri.fsPath)) return []
+
     const text = document.getText()
     // Only enable this feature for files that appear to define a Hono app.
     if (cfg.enableCodeLens === 'auto' && !/\bnew\s+Hono\b/.test(text)) return []
@@ -80,8 +83,21 @@ export class RequestCodeLensProvider implements vscode.CodeLensProvider, vscode.
 }
 
 function parseRoutes(text: string, document: vscode.TextDocument): ParsedRoute[] {
-  return parseRoutesFromText(text).map((r) => {
+  return parseRoutesFromText(text, { excludeComments: true }).map((r) => {
     const pos = document.positionAt(r.callStartIndex)
     return { method: r.method, path: r.path, range: new vscode.Range(pos, pos) }
   })
+}
+
+function isTestFile(fsPath: string): boolean {
+  return (
+    fsPath.endsWith('.test.ts') ||
+    fsPath.endsWith('.test.tsx') ||
+    fsPath.endsWith('.test.js') ||
+    fsPath.endsWith('.test.jsx') ||
+    fsPath.endsWith('.spec.ts') ||
+    fsPath.endsWith('.spec.tsx') ||
+    fsPath.endsWith('.spec.js') ||
+    fsPath.endsWith('.spec.jsx')
+  )
 }

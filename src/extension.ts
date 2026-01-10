@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { registerRequestFeature } from './features/request'
+import { runHonoDebugServe } from './features/serve/debugCommand'
 
 export function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel('Hono')
@@ -13,5 +14,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   registerRequestFeature({ context, output, selector })
 
-  context.subscriptions.push(output)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hono.debug', async () => {
+      await runHonoDebugServe({ context, output })
+    }),
+    output
+  )
 }

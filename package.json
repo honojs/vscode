@@ -35,6 +35,10 @@
       {
         "command": "hono.request.debug",
         "title": "Hono: Request Debug (from CodeLens)"
+      },
+      {
+        "command": "hono.debug",
+        "title": "Hono Debug"
       }
     ],
     "configuration": {

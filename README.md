@@ -57,12 +57,27 @@ You can configure the extension via VS Code Settings:
 - `hono.request.extraArgs` (string[])
   - Extra arguments appended to `hono request` and `hono serve`
 
-## Supported route syntax (current)
+## Supported route syntax
 
-- Route path must be a **string literal**:
-  - `app.get('/path', ...)`
-  - `app.get("/path", ...)`
-  - ``app.get(`/path`, ...)``
+Route paths can be defined using:
+
+- **String literals**: `app.get('/path', ...)`
+  - Single quotes: `app.get('/api', ...)`
+  - Double quotes: `app.get("/api", ...)`
+  - Template literals: ``app.get(`/api`, ...)``
+
+- **Constants**: `app.get(API_PATH, ...)` where `const API_PATH = '/api'`
+
+- **String concatenation**: 
+  - Literal + Literal: `app.get('/api' + '/users', ...)`
+  - Constant + Literal: `app.get(BASE_PATH + '/users', ...)`
+  - Literal + Constant: `app.get('/v1' + API_PATH, ...)`
+
+- **Template literals with variables**: ``app.get(`/api/${version}/users`, ...)``
+  - Shows pattern in CodeLens: `/api/${version}/users`
+  - Variables are displayed as placeholders
+
+**Not supported**: Routes defined in loops, conditionally, or with complex runtime logic.
 
 ## Troubleshooting
 

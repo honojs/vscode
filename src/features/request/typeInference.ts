@@ -119,13 +119,13 @@ function findRouteCallExpression(
       const prop = node.expression.name.text
       if (prop === params.method) {
         const firstArg = node.arguments[0]
-        if (
-          firstArg &&
-          ts.isStringLiteralLike(firstArg) &&
-          firstArg.text === params.routePathLiteral
-        ) {
-          const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf, false))
-          matches.push({ call: node, line })
+        if (firstArg) {
+          // Resolve the route path (supports literals, constants, concatenation, templates)
+          const resolvedPath = resolveRoutePathExpression(firstArg, sf)
+          if (resolvedPath === params.routePathLiteral) {
+            const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf, false))
+            matches.push({ call: node, line })
+          }
         }
       }
     }
@@ -139,6 +139,75 @@ function findRouteCallExpression(
 
   matches.sort((a, b) => Math.abs(a.line - params.line!) - Math.abs(b.line - params.line!))
   return matches[0]?.call
+}
+
+function resolveRoutePathExpression(node: ts.Node, sourceFile: ts.SourceFile): string | null {
+  // Direct string literal
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    return node.text
+  }
+
+  // Template literal with substitutions: convert to pattern
+  if (ts.isTemplateExpression(node)) {
+    return stringifyTemplateExpression(node)
+  }
+
+  // Identifier: resolve to constant
+  if (ts.isIdentifier(node)) {
+    return evaluateConstantString(node, sourceFile)
+  }
+
+  // Binary expression: evaluate string concatenation
+  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    const left = resolveRoutePathExpression(node.left, sourceFile)
+    const right = resolveRoutePathExpression(node.right, sourceFile)
+    if (left !== null && right !== null) {
+      return left + right
+    }
+  }
+
+  return null
+}
+
+function evaluateConstantString(identifier: ts.Identifier, sourceFile: ts.SourceFile): string | null {
+  const varName = identifier.text
+  let result: string | null = null
+
+  const visit = (node: ts.Node) => {
+    if (result !== null) return // Already found
+
+    // Variable declaration: const API_PATH = '/api'
+    if (ts.isVariableDeclaration(node)) {
+      if (ts.isIdentifier(node.name) && node.name.text === varName && node.initializer) {
+        const resolved = resolveRoutePathExpression(node.initializer, sourceFile)
+        if (resolved !== null) {
+          result = resolved
+          return
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return result
+}
+
+function stringifyTemplateExpression(template: ts.TemplateExpression): string {
+  let result = template.head.text
+
+  for (const span of template.templateSpans) {
+    // Add placeholder for the expression
+    if (ts.isIdentifier(span.expression)) {
+      result += `\${${span.expression.text}}`
+    } else {
+      result += '${...}'
+    }
+    result += span.literal.text
+  }
+
+  return result
 }
 
 function findHonoSchemaType(type: ts.Type, checker: ts.TypeChecker): ts.Type | undefined {

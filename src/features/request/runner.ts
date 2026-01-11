@@ -7,6 +7,7 @@ import { buildBundledHonoRequestArgv } from './argvBuilder'
 import type { RequestInvocationInput } from './argvBuilder'
 import { applyPathParams, extractPathParamNames } from './pathParams'
 import type { RequestLensCommandArgs } from './types'
+import { InputHistory, historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 
 type FormFieldSpec = {
   name: string
@@ -18,6 +19,7 @@ type RunnerDeps = {
   args: RequestLensCommandArgs
   output: vscode.OutputChannel
   extensionPath: string
+  context: vscode.ExtensionContext
 }
 
 function getWorkspaceCwdForUri(uriString: string): string | undefined {
@@ -70,14 +72,14 @@ function buildInvocation(
   return { cmd: cfg.nodePath || 'node', argv }
 }
 
-export async function runRequestOnce({ args, output, extensionPath }: RunnerDeps): Promise<void> {
+export async function runRequestOnce({ args, output, extensionPath, context }: RunnerDeps): Promise<void> {
   const cwd = getWorkspaceCwdForUri(args.uri)
   if (!cwd) {
     void vscode.window.showErrorMessage('Workspace folder not found.')
     return
   }
 
-  const resolved = await resolveInvocationInput(args)
+  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState))
   if (!resolved) return
 
   let cmd: string
@@ -141,6 +143,7 @@ export async function runRequestWatchInTerminal({
   args,
   output,
   extensionPath,
+  context,
 }: RunnerDeps): Promise<void> {
   const cwd = getWorkspaceCwdForUri(args.uri)
   if (!cwd) {
@@ -148,7 +151,7 @@ export async function runRequestWatchInTerminal({
     return
   }
 
-  const resolved = await resolveInvocationInput(args)
+  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState))
   if (!resolved) return
 
   let cmd: string
@@ -193,7 +196,7 @@ export async function runRequestWatchInTerminal({
   terminal.sendText(commandLine, true)
 }
 
-export async function runRequestDebug({ args, output, extensionPath }: RunnerDeps): Promise<void> {
+export async function runRequestDebug({ args, output, extensionPath, context }: RunnerDeps): Promise<void> {
   const cwd = getWorkspaceCwdForUri(args.uri)
   if (!cwd) {
     void vscode.window.showErrorMessage('Workspace folder not found.')
@@ -202,7 +205,7 @@ export async function runRequestDebug({ args, output, extensionPath }: RunnerDep
 
   const cfg = getRequestConfig()
 
-  const resolved = await resolveInvocationInput(args)
+  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState))
   if (!resolved) return
 
   let entry: string
@@ -262,9 +265,11 @@ function quoteForShell(s: string): string {
 }
 
 async function resolveInvocationInput(
-  args: RequestLensCommandArgs
+  args: RequestLensCommandArgs,
+  history: InputHistory
 ): Promise<RequestInvocationInput | undefined> {
-  const resolvedPath = await promptPathParams(args.path)
+  const wsKey = workspaceKeyForUri(args.uri)
+  const resolvedPath = await promptPathParams(args.path, wsKey, history)
   if (!resolvedPath) return
 
   const method = args.method.toLowerCase()
@@ -282,43 +287,56 @@ async function resolveInvocationInput(
   })
 
   if (!inferred || inferred.length === 0) {
-    const raw = await promptRawBody()
+    const raw = await promptRawBody(wsKey, history)
     return raw === undefined ? undefined : { method, path: resolvedPath, ...raw }
   }
 
-  const prompted = await promptFormBodyFromTypes(inferred)
+  const prompted = await promptFormBodyFromTypes(inferred, wsKey, history)
   if (!prompted) return // canceled
   return { method, path: resolvedPath, ...prompted }
 }
 
-async function promptPathParams(routePath: string): Promise<string | undefined> {
+async function promptPathParams(
+  routePath: string,
+  wsKey: string,
+  history: InputHistory
+): Promise<string | undefined> {
   const names = extractPathParamNames(routePath)
   if (names.length === 0) return routePath
 
   const values: Record<string, string> = {}
   for (const name of names) {
+    const key = historyKey('pathParam', wsKey, name)
+    const prev = history.get(key)
     const v = await vscode.window.showInputBox({
       prompt: `Enter value for :${name}`,
       placeHolder: name,
       ignoreFocusOut: true,
+      value: prev,
     })
     if (v === undefined) return // canceled
     values[name] = v
+    await history.set(key, v)
   }
 
   return applyPathParams(routePath, values)
 }
 
 async function promptFormBodyFromTypes(
-  fields: FormFieldSpec[]
+  fields: FormFieldSpec[],
+  wsKey: string,
+  history: InputHistory
 ): Promise<{ data?: string; headers?: string[] } | undefined> {
   const params = new URLSearchParams()
 
   for (const f of fields) {
+    const key = historyKey('formField', wsKey, f.name)
+    const prev = history.get(key)
     const v = await vscode.window.showInputBox({
       prompt: `form.${f.name}`,
       placeHolder: f.name,
       ignoreFocusOut: true,
+      value: prev,
     })
     if (v === undefined) return // canceled
 
@@ -329,22 +347,31 @@ async function promptFormBodyFromTypes(
         .filter(Boolean)) {
         params.append(f.name, item)
       }
+      await history.set(key, v)
       continue
     }
     params.append(f.name, v)
+    await history.set(key, v)
   }
 
   return { data: params.toString(), headers: ['Content-Type: application/x-www-form-urlencoded'] }
 }
 
-async function promptRawBody(): Promise<{ data?: string; headers?: string[] } | undefined> {
+async function promptRawBody(
+  wsKey: string,
+  history: InputHistory
+): Promise<{ data?: string; headers?: string[] } | undefined> {
+  const key = historyKey('rawBody', wsKey, 'last')
+  const prev = history.get(key)
   const raw = await vscode.window.showInputBox({
     prompt: 'Request body (raw)',
     placeHolder: 'e.g. {"body":"foo"}  or  body=foo',
     ignoreFocusOut: true,
+    value: prev,
   })
   if (raw === undefined) return undefined // canceled
   if (raw.trim() === '') return {}
+  await history.set(key, raw)
   return { data: raw }
 }
 

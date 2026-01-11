@@ -24,4 +24,17 @@ describe('parseRoutesFromText', () => {
     expect(routes).toHaveLength(1)
     expect(text.slice(routes[0]!.callStartIndex, routes[0]!.callStartIndex + 8)).toBe('app.post')
   })
+
+  it('ignores route-like calls inside comments', () => {
+    const text = [
+      'const app = new Hono();',
+      '// app.get("/nope", () => {})',
+      '/* app.post("/nope2", () => {}) */',
+      'app.get("/ok", () => {})',
+    ].join('\n')
+
+    const routes = parseRoutesFromText(text, { excludeComments: true })
+    expect(routes).toHaveLength(1)
+    expect(routes[0]?.path).toBe('/ok')
+  })
 })

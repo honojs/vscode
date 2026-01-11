@@ -55,7 +55,7 @@ export async function runHonoDebugServe(params: {
     runtimeExecutable: cfg.nodePath || 'node',
     runtimeArgs: ['--inspect=0'],
     program: honoCliEntry,
-    args: ['serve', filePath, ...cfg.extraArgs],
+    args: ['serve', '-p', '0', filePath, ...cfg.extraArgs],
     console: 'integratedTerminal',
     internalConsoleOptions: 'neverOpen',
     sourceMaps: true,

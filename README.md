@@ -84,4 +84,11 @@ npm run package
 code --install-extension "hono-$(node -p \"require('./package.json').version\").vsix" --force
 ```
 
+## Authors
 
+- Taku Amano https://github.com/usualoma
+- Yusuke Wada https://github.com/yusukebe
+
+## License
+
+MIT

@@ -53,7 +53,7 @@
             "type": "string"
           },
           "default": [],
-          "description": "Extra args appended to `hono request`."
+          "description": "Extra args appended to `hono request` and `hono serve`."
         }
       }
     }

@@ -20,7 +20,10 @@ type Range = {
 const ROUTE_CALL_RE =
   /(^|[^\w$])([A-Za-z_$][\w$]*)\s*\.\s*(get|post|put|delete|patch|options|head)\s*\(\s*(['"`])([^'"`]+)\4/gm
 
-export function parseRoutesFromText(text: string, opts?: { excludeComments?: boolean }): ParsedRoute[] {
+export function parseRoutesFromText(
+  text: string,
+  opts?: { excludeComments?: boolean }
+): ParsedRoute[] {
   const routes: ParsedRoute[] = []
   ROUTE_CALL_RE.lastIndex = 0
 

@@ -16,7 +16,8 @@ export class InputHistory {
 export function workspaceKeyForUri(uriString: string): string {
   try {
     const uri = vscode.Uri.parse(uriString)
-    const folder = vscode.workspace.getWorkspaceFolder(uri) ?? vscode.workspace.workspaceFolders?.[0]
+    const folder =
+      vscode.workspace.getWorkspaceFolder(uri) ?? vscode.workspace.workspaceFolders?.[0]
     return folder?.uri.fsPath ?? 'global'
   } catch {
     return 'global'
@@ -26,4 +27,3 @@ export function workspaceKeyForUri(uriString: string): string {
 export function historyKey(prefix: string, workspaceKey: string, name: string): string {
   return `hono.history.${prefix}.${workspaceKey}.${name}`
 }
-

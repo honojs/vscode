@@ -19,7 +19,12 @@ export function registerRequestFeature(params: {
       await runRequestOnce({ args, output, extensionPath: context.extensionPath, context })
     }),
     vscode.commands.registerCommand('hono.request.watch', async (args: RequestLensCommandArgs) => {
-      await runRequestWatchInTerminal({ args, output, extensionPath: context.extensionPath, context })
+      await runRequestWatchInTerminal({
+        args,
+        output,
+        extensionPath: context.extensionPath,
+        context,
+      })
     }),
     vscode.commands.registerCommand('hono.request.debug', async (args: RequestLensCommandArgs) => {
       await runRequestDebug({ args, output, extensionPath: context.extensionPath, context })

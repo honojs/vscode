@@ -25,4 +25,3 @@ export function resolveBundledHonoCliEntry(extensionPath: string): string {
     throw e
   }
 }
-

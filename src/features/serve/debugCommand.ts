@@ -68,4 +68,3 @@ export async function runHonoDebugServe(params: {
     void vscode.window.showErrorMessage('Failed to start debug session.')
   }
 }
-

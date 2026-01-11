@@ -3,11 +3,11 @@ import { spawn } from 'node:child_process'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { getRequestConfig } from '../../shared/config'
+import { InputHistory, historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 import { buildBundledHonoRequestArgv } from './argvBuilder'
 import type { RequestInvocationInput } from './argvBuilder'
 import { applyPathParams, extractPathParamNames } from './pathParams'
 import type { RequestLensCommandArgs } from './types'
-import { InputHistory, historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 
 type FormFieldSpec = {
   name: string
@@ -72,7 +72,12 @@ function buildInvocation(
   return { cmd: cfg.nodePath || 'node', argv }
 }
 
-export async function runRequestOnce({ args, output, extensionPath, context }: RunnerDeps): Promise<void> {
+export async function runRequestOnce({
+  args,
+  output,
+  extensionPath,
+  context,
+}: RunnerDeps): Promise<void> {
   const cwd = getWorkspaceCwdForUri(args.uri)
   if (!cwd) {
     void vscode.window.showErrorMessage('Workspace folder not found.')
@@ -196,7 +201,12 @@ export async function runRequestWatchInTerminal({
   terminal.sendText(commandLine, true)
 }
 
-export async function runRequestDebug({ args, output, extensionPath, context }: RunnerDeps): Promise<void> {
+export async function runRequestDebug({
+  args,
+  output,
+  extensionPath,
+  context,
+}: RunnerDeps): Promise<void> {
   const cwd = getWorkspaceCwdForUri(args.uri)
   if (!cwd) {
     void vscode.window.showErrorMessage('Workspace folder not found.')

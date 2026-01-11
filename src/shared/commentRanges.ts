@@ -91,4 +91,3 @@ export function isIndexInRanges(pos: number, ranges: Range[]): boolean {
   }
   return false
 }
-

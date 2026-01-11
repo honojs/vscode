@@ -13,6 +13,7 @@
     "vscode": "^1.90.0"
   },
   "categories": [
+    "Debuggers",
     "Other"
   ],
   "activationEvents": [

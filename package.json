@@ -3,7 +3,7 @@
   "displayName": "Hono",
   "description": "VSCode extension for Hono development.",
   "version": "0.0.1",
-  "publisher": "usualoma",
+  "publisher": "Hono",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
     "vscode": "^1.90.0"
   },
   "categories": [
+    "Debuggers",
     "Other"
   ],
   "activationEvents": [

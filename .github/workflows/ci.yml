@@ -2,13 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - "**/*"
   pull_request:
-    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,11 +23,41 @@ jobs:
       - name: Run tests
         run: npm run test:run
 
-      - name: Build
-        run: npm run package
-
       - name: Lint
         run: npm run lint
 
       - name: Format check
         run: npm run format
+
+      - name: Append short commit hash to package version
+        id: version
+        run: |
+          SHORT_SHA="$(git rev-parse --short=7 HEAD)"
+          BASE_VERSION="$(node -p "require('./package.json').version.replace(/-[0-9a-f]{7}$/, '')")"
+          NEW_VERSION="${BASE_VERSION}-${SHORT_SHA}"
+          npm version --no-git-tag-version "${NEW_VERSION}"
+          echo "package_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Build
+        run: npm run package
+
+      - name: Upload package
+        id: upload-package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: |
+            *.vsix
+
+      - name: Add comment to PR
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Installing this PR package
+
+            ```bash
+            gh run download ${{ github.run_id }} -n package -R ${{ github.repository }} -D .
+            code --install-extension hono-${{ steps.version.outputs.package_version }}.vsix
+            ```

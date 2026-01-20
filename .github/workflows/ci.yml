@@ -33,9 +33,9 @@ jobs:
         id: version
         run: |
           SHORT_SHA="$(git rev-parse --short=7 HEAD)"
-          BASE_VERSION="$(node -p "require('./package.json').version.replace(/-[0-9a-f]{7}$/, '')")"
-          NEW_VERSION="${BASE_VERSION}-${SHORT_SHA}"
-          npm version --no-git-tag-version "${NEW_VERSION}"
+          BASE_VERSION="$(node -p "require('./package.json').version.replace(/\+build-[0-9a-f]{7}$/, '')")"
+          NEW_VERSION="${BASE_VERSION}+build-${SHORT_SHA}"
+          node -e "const pkg = require('./package.json'); pkg.version = '${NEW_VERSION}'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')"
           echo "package_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
 
       - name: Build
@@ -49,11 +49,21 @@ jobs:
           path: |
             *.vsix
 
-      - name: Add comment to PR
+      - name: Find installation instructions comment
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad
+        if: ${{ github.event_name == 'pull_request' }}
+        id: find-install-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Installing this PR package
+
+      - name: Post installation instructions
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
         if: ${{ github.event_name == 'pull_request' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-install-comment.outputs.comment-id }}
           body: |
             ### Installing this PR package
 
@@ -61,3 +71,4 @@ jobs:
             gh run download ${{ github.run_id }} -n package -R ${{ github.repository }} -D .
             code --install-extension hono-${{ steps.version.outputs.package_version }}.vsix
             ```
+          edit-mode: replace

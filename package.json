@@ -2,7 +2,7 @@
   "name": "hono",
   "displayName": "Hono",
   "description": "VSCode extension for Hono development.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "Hono",
   "license": "MIT",
   "icon": "images/icon.png",

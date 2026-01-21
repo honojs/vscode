@@ -5,7 +5,7 @@ import { findCommentRanges, isIndexInRanges } from '../../shared/commentRanges'
 import type { InputHistory } from '../../shared/inputHistory'
 import { historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 
-const ENTRY_CANDIDATES = ['src/index.ts', 'src/index.tsx', 'src/index.js', 'src/index.jsx'] as const
+const ENTRY_CANDIDATES = ['src/index.ts', 'src/index.tsx', 'src/index.js', 'src/index.jsx']
 
 function containsOutsideComments(content: string, needle: string): boolean {
   const commentRanges = findCommentRanges(content)
@@ -24,7 +24,16 @@ function containsOutsideComments(content: string, needle: string): boolean {
  * Checks for standard entry files and includes the currently editing file.
  */
 export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: string): string[] {
-  const candidates: string[] = []
+  // Add the currently editing file (if not already included)
+  const currentFilePath = vscode.Uri.parse(currentFileUri).fsPath
+  const relativeCurrent = path.relative(workspaceRoot, currentFilePath)
+
+  if (ENTRY_CANDIDATES.includes(relativeCurrent)) {
+    // Immediate return if the current file is an well-known entry point
+    return [relativeCurrent]
+  }
+  
+  const candidates: string[] = [relativeCurrent]
 
   // Check standard entry candidates
   for (const candidate of ENTRY_CANDIDATES) {
@@ -35,14 +44,6 @@ export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: 
         candidates.push(candidate)
       }
     }
-  }
-
-  // Add the currently editing file (if not already included)
-  const currentFilePath = vscode.Uri.parse(currentFileUri).fsPath
-  const relativeCurrent = path.relative(workspaceRoot, currentFilePath)
-
-  if (!candidates.includes(relativeCurrent)) {
-    candidates.unshift(relativeCurrent)
   }
 
   return candidates

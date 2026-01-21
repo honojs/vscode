@@ -1,10 +1,23 @@
 import * as vscode from 'vscode'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { findCommentRanges, isIndexInRanges } from '../../shared/commentRanges'
 import type { InputHistory } from '../../shared/inputHistory'
 import { historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 
 const ENTRY_CANDIDATES = ['src/index.ts', 'src/index.tsx', 'src/index.js', 'src/index.jsx'] as const
+
+function containsOutsideComments(content: string, needle: string): boolean {
+  const commentRanges = findCommentRanges(content)
+  let index = 0
+  while ((index = content.indexOf(needle, index)) !== -1) {
+    if (!isIndexInRanges(index, commentRanges)) {
+      return true
+    }
+    index += needle.length
+  }
+  return false
+}
 
 /**
  * Find entry point candidates in the workspace.
@@ -18,7 +31,7 @@ export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: 
     const fullPath = path.join(workspaceRoot, candidate)
     if (fs.existsSync(fullPath)) {
       const content = fs.readFileSync(fullPath, 'utf-8')
-      if (content.includes('new Hono') && content.includes('.route')) {
+      if (containsOutsideComments(content, 'new Hono') && containsOutsideComments(content, '.route')) {
         candidates.push(candidate)
       }
     }

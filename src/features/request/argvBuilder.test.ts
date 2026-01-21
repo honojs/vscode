@@ -32,4 +32,48 @@ describe('buildBundledHonoRequestArgv', () => {
       '--foo',
     ])
   })
+
+  it('builds argv with app entry file', () => {
+    const argv = buildBundledHonoRequestArgv({
+      entry: '/ext/node_modules/@hono/cli/dist/cli.js',
+      watch: false,
+      input: {
+        method: 'get',
+        path: '/hello',
+        appEntryFile: 'src/app.ts',
+      },
+      extraArgs: [],
+    })
+
+    expect(argv).toEqual([
+      '/ext/node_modules/@hono/cli/dist/cli.js',
+      'request',
+      'src/app.ts',
+      '-P',
+      '/hello',
+      '-X',
+      'GET',
+    ])
+  })
+
+  it('builds argv without app entry file when not provided', () => {
+    const argv = buildBundledHonoRequestArgv({
+      entry: '/ext/node_modules/@hono/cli/dist/cli.js',
+      watch: false,
+      input: {
+        method: 'get',
+        path: '/hello',
+      },
+      extraArgs: [],
+    })
+
+    expect(argv).toEqual([
+      '/ext/node_modules/@hono/cli/dist/cli.js',
+      'request',
+      '-P',
+      '/hello',
+      '-X',
+      'GET',
+    ])
+  })
 })

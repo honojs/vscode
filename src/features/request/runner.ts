@@ -297,6 +297,19 @@ async function resolveInvocationInput(
     return { method, path: resolvedPath, appEntryFile }
   }
 
+  // If jsonBody is provided from @example, use it directly with application/json
+  if (args.jsonBody) {
+    return {
+      method,
+      path: resolvedPath,
+      appEntryFile,
+      data: args.jsonBody,
+      headers: [
+        args.contentType ? `Content-Type: ${args.contentType}` : 'Content-Type: application/json',
+      ],
+    }
+  }
+
   const inferred = await inferFormFieldsFromHonoSchema({
     uri: args.uri,
     line: args.line,

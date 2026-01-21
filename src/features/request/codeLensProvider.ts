@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { getRequestConfig } from '../../shared/config'
-import { parseRoutesFromText } from './routeParser'
+import { parseJSDocExamplesFromText, parseRoutesFromText } from './routeParser'
 import type { RequestLensCommandArgs } from './types'
 
 type ParsedRoute = {
@@ -72,6 +72,43 @@ export class RequestCodeLensProvider implements vscode.CodeLensProvider, vscode.
       )
     }
 
+    // Parse @example HTTP requests from JSDoc comments
+    const jsdocExamples = parseJSDocExamples(text, document)
+    for (const example of jsdocExamples) {
+      const args: RequestLensCommandArgs = {
+        path: example.routePath,
+        method: example.method,
+        uri: document.uri.toString(),
+        line: example.routeLine,
+        jsonBody: example.jsonBody,
+        contentType: 'application/json',
+      }
+
+      lenses.push(
+        new vscode.CodeLens(example.range, {
+          title: `$(play)  ${example.method.toUpperCase()} ${example.routePath}`,
+          command: 'hono.request.run',
+          arguments: [args],
+        })
+      )
+
+      lenses.push(
+        new vscode.CodeLens(example.range, {
+          title: `$(sync) Watch`,
+          command: 'hono.request.watch',
+          arguments: [args],
+        })
+      )
+
+      lenses.push(
+        new vscode.CodeLens(example.range, {
+          title: `$(bug) Debug`,
+          command: 'hono.request.debug',
+          arguments: [args],
+        })
+      )
+    }
+
     return lenses
   }
 
@@ -86,6 +123,40 @@ function parseRoutes(text: string, document: vscode.TextDocument): ParsedRoute[]
   return parseRoutesFromText(text, { excludeComments: true }).map((r) => {
     const pos = document.positionAt(r.callStartIndex)
     return { method: r.method, path: r.path, range: new vscode.Range(pos, pos) }
+  })
+}
+
+type ParsedJSDocExampleWithRange = {
+  method: string
+  jsonBody: string
+  routePath: string
+  routeLine: number
+  range: vscode.Range
+}
+
+function parseJSDocExamples(
+  text: string,
+  document: vscode.TextDocument
+): ParsedJSDocExampleWithRange[] {
+  return parseJSDocExamplesFromText(text).map((example) => {
+    const pos = document.positionAt(example.methodStartIndex)
+    // Find the route line for type inference (find the route in the text after the example)
+    const routeSearchStart = example.methodStartIndex
+    const routeMatch = text
+      .slice(routeSearchStart)
+      .match(/\.\s*(get|post|put|delete|patch|options|head)\s*\(/m)
+    let routeLine = pos.line
+    if (routeMatch && routeMatch.index !== undefined) {
+      routeLine = document.positionAt(routeSearchStart + routeMatch.index).line
+    }
+
+    return {
+      method: example.method,
+      jsonBody: example.jsonBody,
+      routePath: example.routePath,
+      routeLine,
+      range: new vscode.Range(pos, pos),
+    }
   })
 }
 

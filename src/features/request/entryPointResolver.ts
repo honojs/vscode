@@ -26,7 +26,7 @@ export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: 
   const relativeCurrent = path.relative(workspaceRoot, currentFilePath)
 
   if (!candidates.includes(relativeCurrent)) {
-    candidates.push(relativeCurrent)
+    candidates.unshift(relativeCurrent)
   }
 
   return candidates

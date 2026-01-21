@@ -17,7 +17,10 @@ export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: 
   for (const candidate of ENTRY_CANDIDATES) {
     const fullPath = path.join(workspaceRoot, candidate)
     if (fs.existsSync(fullPath)) {
-      candidates.push(candidate)
+      const content = fs.readFileSync(fullPath, 'utf-8')
+      if (content.includes('new Hono') && content.includes('.route')) {
+        candidates.push(candidate)
+      }
     }
   }
 

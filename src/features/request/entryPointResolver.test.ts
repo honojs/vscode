@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as fs from 'node:fs'
-import * as vscode from 'vscode'
 import { findEntryPointCandidates } from './entryPointResolver'
 
 vi.mock('node:fs')

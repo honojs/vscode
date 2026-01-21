@@ -32,7 +32,7 @@ export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: 
     // Immediate return if the current file is an well-known entry point
     return [relativeCurrent]
   }
-  
+
   const candidates: string[] = [relativeCurrent]
 
   // Check standard entry candidates
@@ -40,7 +40,10 @@ export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: 
     const fullPath = path.join(workspaceRoot, candidate)
     if (fs.existsSync(fullPath)) {
       const content = fs.readFileSync(fullPath, 'utf-8')
-      if (containsOutsideComments(content, 'new Hono') && containsOutsideComments(content, '.route')) {
+      if (
+        containsOutsideComments(content, 'new Hono') &&
+        containsOutsideComments(content, '.route')
+      ) {
         candidates.push(candidate)
       }
     }

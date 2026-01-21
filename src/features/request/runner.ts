@@ -6,8 +6,8 @@ import { getRequestConfig } from '../../shared/config'
 import { InputHistory, historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 import { buildBundledHonoRequestArgv } from './argvBuilder'
 import type { RequestInvocationInput } from './argvBuilder'
-import { applyPathParams, extractPathParamNames } from './pathParams'
 import { resolveEntryPoint } from './entryPointResolver'
+import { applyPathParams, extractPathParamNames } from './pathParams'
 import type { RequestLensCommandArgs } from './types'
 
 type FormFieldSpec = {

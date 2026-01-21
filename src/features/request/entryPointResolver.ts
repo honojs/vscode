@@ -1,23 +1,16 @@
 import * as vscode from 'vscode'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { InputHistory, historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
+import type { InputHistory } from '../../shared/inputHistory'
+import { historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 
-const ENTRY_CANDIDATES = [
-  'src/index.ts',
-  'src/index.tsx',
-  'src/index.js',
-  'src/index.jsx',
-] as const
+const ENTRY_CANDIDATES = ['src/index.ts', 'src/index.tsx', 'src/index.js', 'src/index.jsx'] as const
 
 /**
  * Find entry point candidates in the workspace.
  * Checks for standard entry files and includes the currently editing file.
  */
-export function findEntryPointCandidates(
-  workspaceRoot: string,
-  currentFileUri: string
-): string[] {
+export function findEntryPointCandidates(workspaceRoot: string, currentFileUri: string): string[] {
   const candidates: string[] = []
 
   // Check standard entry candidates

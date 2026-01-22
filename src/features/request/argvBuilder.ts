@@ -3,6 +3,7 @@ export type RequestInvocationInput = {
   path: string
   data?: string
   headers?: string[]
+  appEntryFile?: string
 }
 
 export function buildBundledHonoRequestArgv(params: {
@@ -15,6 +16,7 @@ export function buildBundledHonoRequestArgv(params: {
   return [
     entry,
     'request',
+    ...(input.appEntryFile ? [input.appEntryFile] : []),
     '-P',
     input.path,
     '-X',

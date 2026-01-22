@@ -6,6 +6,7 @@ import { getRequestConfig } from '../../shared/config'
 import { InputHistory, historyKey, workspaceKeyForUri } from '../../shared/inputHistory'
 import { buildBundledHonoRequestArgv } from './argvBuilder'
 import type { RequestInvocationInput } from './argvBuilder'
+import { resolveEntryPoint } from './entryPointResolver'
 import { applyPathParams, extractPathParamNames } from './pathParams'
 import type { RequestLensCommandArgs } from './types'
 
@@ -84,7 +85,7 @@ export async function runRequestOnce({
     return
   }
 
-  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState))
+  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState), cwd)
   if (!resolved) return
 
   let cmd: string
@@ -156,7 +157,7 @@ export async function runRequestWatchInTerminal({
     return
   }
 
-  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState))
+  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState), cwd)
   if (!resolved) return
 
   let cmd: string
@@ -215,7 +216,7 @@ export async function runRequestDebug({
 
   const cfg = getRequestConfig()
 
-  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState))
+  const resolved = await resolveInvocationInput(args, new InputHistory(context.globalState), cwd)
   if (!resolved) return
 
   let entry: string
@@ -247,6 +248,7 @@ export async function runRequestDebug({
     program: entry,
     args: [
       'request',
+      ...(resolved.appEntryFile ? [resolved.appEntryFile] : []),
       '-P',
       resolved.path,
       '-X',
@@ -276,9 +278,15 @@ function quoteForShell(s: string): string {
 
 async function resolveInvocationInput(
   args: RequestLensCommandArgs,
-  history: InputHistory
+  history: InputHistory,
+  workspaceRoot: string
 ): Promise<RequestInvocationInput | undefined> {
   const wsKey = workspaceKeyForUri(args.uri)
+
+  // Resolve entry point
+  const appEntryFile = await resolveEntryPoint(workspaceRoot, args.uri, history)
+  if (!appEntryFile) return undefined
+
   const resolvedPath = await promptPathParams(args.path, wsKey, history)
   if (!resolvedPath) return
 
@@ -286,7 +294,7 @@ async function resolveInvocationInput(
 
   // For non-body methods, we just run.
   if (!['post', 'put', 'patch', 'delete'].includes(method)) {
-    return { method, path: resolvedPath }
+    return { method, path: resolvedPath, appEntryFile }
   }
 
   const inferred = await inferFormFieldsFromHonoSchema({
@@ -298,12 +306,12 @@ async function resolveInvocationInput(
 
   if (!inferred || inferred.length === 0) {
     const raw = await promptRawBody(wsKey, history)
-    return raw === undefined ? undefined : { method, path: resolvedPath, ...raw }
+    return raw === undefined ? undefined : { method, path: resolvedPath, appEntryFile, ...raw }
   }
 
   const prompted = await promptFormBodyFromTypes(inferred, wsKey, history)
   if (!prompted) return // canceled
-  return { method, path: resolvedPath, ...prompted }
+  return { method, path: resolvedPath, appEntryFile, ...prompted }
 }
 
 async function promptPathParams(

@@ -15,4 +15,12 @@ export type RequestLensCommandArgs = {
    * Line number where the route call was detected.
    */
   line?: number
+  /**
+   * Pre-defined JSON body from @example in JSDoc.
+   */
+  jsonBody?: string
+  /**
+   * Content-Type header (e.g. "application/json").
+   */
+  contentType?: string
 }
